@@ -1,7 +1,8 @@
 const cheerio = require("cheerio");
 const Scrap = require("../basic/scrap");
+const { saveCache, inCache } = require("../cache");
 
-class Test extends Scrap {
+class GorkhaPatra extends Scrap {
     URL = "https://gorkhapatraonline.com/";
     name = "gorkhapatra";
     loadData() {
@@ -13,20 +14,24 @@ class Test extends Scrap {
                 const datas = [];
 
                 $(scanners).each((index, box) => {
-                    const image = $(box).find('.item-img img')[0].attribs.src;
                     const info = $(box).find('.item-title a')[0];
                     const url = info.attribs.href;
-                    const title = info.children[0].data;
-                    // const title = info.text();
-                    // console.log(title, image);
-                    datas.push({
-                        title,
-                        url,
-                        image,
-                        topic: "gorkhapatra",
-                        category: "news"
-                    });
+                    if (!inCache(url)) {
+
+                        const image = $(box).find('.item-img img')[0].attribs.src;
+                        const title = info.children[0].data;
+
+                        datas.push({
+                            title,
+                            url,
+                            image,
+                            topic: "gorkhapatra",
+                            category: "news"
+                        });
+                    }
+
                 });
+                saveCache(datas);
 
                 this.save(datas);
             }).catch((err) => {
@@ -34,6 +39,4 @@ class Test extends Scrap {
             });
     }
 }
-
-const test = new Test();
-test.loadData();
+module.exports = GorkhaPatra;
